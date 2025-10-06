@@ -35,31 +35,49 @@ GET /health
 
 Returns: `{"status": "ok", "timestamp": "..."}`
 
-### Inference
+### Ask Endpoint
 
 ```bash
-POST /api/infer
+POST /ask
 Content-Type: application/json
 
 {
-  "prompt": "Your text here",
-  "max_tokens": 100,
-  "temperature": 0.7
+  "prompt": "Your question here",
+  "enable_grounding": true
+}
+```
+
+#### Example with curl
+
+```bash
+curl -X POST http://localhost:3000/ask \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "What is the Axiom Dynamic Logic Model?",
+    "enable_grounding": true
+  }'
+```
+
+Response:
+```json
+{
+  "response": "The ADLM response text...",
+  "grounded": true
 }
 ```
 
 ## Architecture
 
-- **API Server**: Express.js (Node.js) handles HTTP requests
-- **ADLM Core**: Python-based transformer model for inference
-- **Deployment**: Docker container with Node + Python runtime
+• API Server: Express.js (Node.js) handles HTTP requests
+• ADLM Core: Python-based transformer model for inference
+• Deployment: Docker container with Node + Python runtime
 
 ## Files
 
-- `api_server/server.js` - REST API implementation
-- `adlm/` - Python ADLM model code
-- `scripts/` - Setup and deployment scripts
-- `Dockerfile` - Container definition
+• api_server/server.js - REST API implementation
+• api_server/axiom_model/ - Python ADLM model code
+• scripts/ - Setup and deployment scripts
+• Dockerfile - Container definition
 
 ## License
 
