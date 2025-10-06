@@ -1,15 +1,4 @@
 {
-  "model": "gpt-4",
-  "messages": [
-    {
-      "role": "system",
-      "content": "You are an SSI (Self-Sovereign Identity) expert assistant. Provide detailed, accurate information about decentralized identity systems, verifiable credentials, and related standards."
-    },
-    {
-      "role": "user",
-      "content": "Explain the core principles of Self-Sovereign Identity."
-    }
-  ],
-  "temperature": 0.7,
-  "max_tokens": 1000
+  "prompt": "What is the Axiom Dynamic Logic Model?",
+  "enable_grounding": true
 }
