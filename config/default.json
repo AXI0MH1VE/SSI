@@ -1,0 +1,20 @@
+{
+  "redis": {
+    "host": "redis",
+    "port": 6379,
+    "queueName": "axiom_model_queue"
+  },
+  "api": {
+    "port": 3000,
+    "corsOrigins": ["*"],
+    "requestTimeout": 300000
+  },
+  "worker": {
+    "concurrency": 2,
+    "timeout": 180000
+  },
+  "logging": {
+    "level": "info",
+    "format": "json"
+  }
+}

@@ -1,11 +1,19 @@
 const express = require('express');
 const cors = require('cors');
-const { spawn } = require('child_process');
+const Redis = require('ioredis');
+const { v4: uuidv4 } = require('uuid');
+const config = require('../config/default.json');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.api.port || 3000;
 
-app.use(cors());
+// Redis clients
+const redisClient = new Redis({
+  host: config.redis.host,
+  port: config.redis.port
+});
+
+app.use(cors({ origin: config.api.corsOrigins }));
 app.use(express.json());
 
 // Logging middleware
@@ -16,51 +24,66 @@ app.use((req, res, next) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    redis: redisClient.status 
+  });
 });
 
-// ADLM /ask endpoint
-app.post('/ask', (req, res) => {
+// ADLM /ask endpoint with Redis queue
+app.post('/ask', async (req, res) => {
   const { prompt, enable_grounding = true } = req.body;
   
   if (!prompt) {
     return res.status(400).json({ error: 'Prompt is required' });
   }
 
-  const pythonProcess = spawn('python3', [
-    'api_server/axiom_model/axiom_model_handler.py',
-    '--prompt', prompt,
-    '--enable-grounding', enable_grounding.toString()
-  ]);
+  try {
+    const jobId = uuidv4();
+    const job = {
+      id: jobId,
+      prompt,
+      enable_grounding,
+      timestamp: new Date().toISOString()
+    };
 
-  let output = '';
-  let errorOutput = '';
+    // Push job to Redis queue (LPUSH)
+    await redisClient.lpush(config.redis.queueName, JSON.stringify(job));
+    console.log(`Job ${jobId} pushed to queue`);
 
-  pythonProcess.stdout.on('data', (data) => {
-    output += data.toString();
-  });
+    // Wait for result from response queue (BRPOP with timeout)
+    const responseKey = `${config.redis.queueName}:response:${jobId}`;
+    const timeout = Math.floor(config.api.requestTimeout / 1000); // Convert to seconds
+    const result = await redisClient.brpop(responseKey, timeout);
 
-  pythonProcess.stderr.on('data', (data) => {
-    errorOutput += data.toString();
-    console.error(`Python stderr: ${data}`);
-  });
-
-  pythonProcess.on('close', (code) => {
-    if (code === 0) {
-      try {
-        const result = JSON.parse(output);
-        res.json(result);
-      } catch (e) {
-        res.status(500).json({ error: 'Failed to parse Python output', details: output });
-      }
-    } else {
-      res.status(500).json({ error: 'Python process failed', code, details: errorOutput });
+    if (!result) {
+      return res.status(504).json({ 
+        error: 'Request timeout', 
+        jobId 
+      });
     }
-  });
+
+    const [, responseData] = result;
+    const response = JSON.parse(responseData);
+
+    if (response.error) {
+      return res.status(500).json(response);
+    }
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error processing request:', error);
+    res.status(500).json({ 
+      error: 'Internal server error', 
+      details: error.message 
+    });
+  }
 });
 
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`Ask endpoint: http://localhost:${PORT}/ask`);
+  console.log(`Redis connected: ${config.redis.host}:${config.redis.port}`);
 });
