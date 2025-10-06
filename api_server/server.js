@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { spawn } = require('child_process');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -18,19 +19,18 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ADLM inference endpoint
-app.post('/api/infer', (req, res) => {
-  const { prompt, max_tokens = 100, temperature = 0.7 } = req.body;
+// ADLM /ask endpoint
+app.post('/ask', (req, res) => {
+  const { prompt, enable_grounding = true } = req.body;
   
   if (!prompt) {
     return res.status(400).json({ error: 'Prompt is required' });
   }
 
   const pythonProcess = spawn('python3', [
-    'adlm/inference.py',
+    'api_server/axiom_model/axiom_model_handler.py',
     '--prompt', prompt,
-    '--max-tokens', max_tokens.toString(),
-    '--temperature', temperature.toString()
+    '--enable-grounding', enable_grounding.toString()
   ]);
 
   let output = '';
@@ -62,4 +62,5 @@ app.post('/api/infer', (req, res) => {
 app.listen(PORT, () => {
   console.log(`API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`Ask endpoint: http://localhost:${PORT}/ask`);
 });
