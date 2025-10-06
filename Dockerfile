@@ -1,5 +1,5 @@
 # SSI ADLM v2.1 Dockerfile
-FROM node:18-slim
+FROM node:20-slim
 
 # Install Python and dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,10 +15,13 @@ RUN cd api_server && npm ci --only=production
 
 # Copy application files
 COPY api_server/ ./api_server/
-COPY adlm/ ./adlm/
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir torch transformers numpy
+# Copy axiom_model files
+COPY api_server/axiom_model/ ./api_server/axiom_model/
+
+# Install Python dependencies from axiom_model
+COPY api_server/axiom_model/requirements.txt ./
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Expose API port
 EXPOSE 3000
