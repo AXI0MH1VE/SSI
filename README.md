@@ -7,8 +7,10 @@ Adaptive Deep Learning Model (ADLM) system with REST API.
 ### Docker (Recommended)
 
 ```bash
-# Run setup
+# Make scripts executable
 chmod +x scripts/*.sh
+
+# Run setup
 ./scripts/setup.sh
 
 # Start with Docker
@@ -18,6 +20,9 @@ chmod +x scripts/*.sh
 ### Local Development
 
 ```bash
+# Make scripts executable
+chmod +x scripts/*.sh
+
 # Install dependencies
 ./scripts/setup.sh
 
@@ -33,14 +38,23 @@ chmod +x scripts/*.sh
 GET /health
 ```
 
-Returns: `{"status": "ok", "timestamp": "..."}`
+**Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-10-06T16:39:00.000Z"
+}
+```
 
 ### Ask Endpoint
 
 ```bash
 POST /ask
 Content-Type: application/json
+```
 
+**Request Body:**
+```json
 {
   "prompt": "Your question here",
   "enable_grounding": true
@@ -58,7 +72,7 @@ curl -X POST http://localhost:3000/ask \
   }'
 ```
 
-Response:
+**Response:**
 ```json
 {
   "response": "The ADLM response text...",
@@ -68,15 +82,15 @@ Response:
 
 ## Architecture
 
-• API Server: Express.js (Node.js) handles HTTP requests
-• ADLM Core: Python-based transformer model for inference
+• API Server: Express.js (Node.js) handles HTTP requests  
+• ADLM Core: Python-based transformer model for inference  
 • Deployment: Docker container with Node + Python runtime
 
 ## Files
 
-• api_server/server.js - REST API implementation
-• api_server/axiom_model/ - Python ADLM model code
-• scripts/ - Setup and deployment scripts
+• api_server/server.js - REST API implementation  
+• api_server/axiom_model/ - Python ADLM model code  
+• scripts/ - Setup and deployment scripts  
 • Dockerfile - Container definition
 
 ## License
