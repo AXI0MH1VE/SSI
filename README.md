@@ -2,6 +2,20 @@
 
 Adaptive Deep Learning Model (ADLM) system with REST API.
 
+## Principles
+
+### User Full Control
+- Offline-by-default; no external API calls
+- All data and logs stored locally under local_storage/
+- Deterministic behavior; identical inputs yield identical outputs
+- No hidden configuration; all runtime flags are visible in README and scripts
+
+### Full Transparency
+- Clear, inspectable ADLM logic in axiom_model/axiom_model_handler.py
+- Local knowledge base in axiom_model/knowledge_base.json
+- Per-request JSON audit logs including telemetry and cost_summary
+- Architecture, operations, security, SLA, and EULA published in repo and sales_pack/
+
 ## Quickstart
 
 ### Docker (Recommended)
