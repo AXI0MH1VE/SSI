@@ -1,0 +1,26 @@
+[
+    {
+        "id": "axiom_kb_001",
+        "title": "Principles of Sovereign Computing",
+        "content": "Deterministic execution is a core principle. It ensures that a program, given the same input and initial state, will always produce the same output. This is crucial for verifiable and auditable systems.",
+        "keywords": ["deterministic", "execution", "sovereign", "verifiable"]
+    },
+    {
+        "id": "axiom_kb_002",
+        "title": "Lightweight AI Models",
+        "content": "Modern AI research focuses on creating smaller, more efficient models that can run on edge devices without specialized hardware like GPUs. This includes procedural and logic-based systems.",
+        "keywords": ["lightweight", "ai", "model", "edge", "cpu", "procedural"]
+    },
+    {
+        "id": "axiom_kb_003",
+        "title": "Rust Programming Language",
+        "content": "Rust is a systems programming language focused on safety, concurrency, and performance. Its ownership model guarantees memory safety without needing a garbage collector.",
+        "keywords": ["rust", "systems", "programming", "safety", "performance"]
+    },
+    {
+        "id": "axiom_kb_004",
+        "title": "Self-Sovereign Identity (SSI)",
+        "content": "Self-Sovereign Identity (SSI) is a model for managing digital identities in which an individual has sole control over their personal data, without the need for a central administrative authority. It often uses Verifiable Credentials.",
+        "keywords": ["ssi", "self-sovereign", "identity", "did", "verifiable", "credentials"]
+    }
+]
