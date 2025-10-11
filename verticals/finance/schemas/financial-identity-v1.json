@@ -1,0 +1,275 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.axiomhive.com/ssi/finance/financial-identity-v1.json",
+  "title": "Financial Identity Credential",
+  "description": "Production-ready credential schema for financial services identity verification and KYC/AML compliance",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "credentialSubject": {
+      "type": "object",
+      "required": [
+        "id",
+        "credentialType",
+        "personalInfo",
+        "verificationStatus",
+        "issuedBy"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uri",
+          "description": "DID (Decentralized Identifier) of the credential subject"
+        },
+        "credentialType": {
+          "type": "string",
+          "enum": [
+            "CustomerIdentity",
+            "AccountHolder",
+            "AccreditedInvestor",
+            "TransactionAuthorization"
+          ],
+          "description": "Type of financial credential"
+        },
+        "personalInfo": {
+          "type": "object",
+          "required": ["legalName", "dateOfBirth"],
+          "properties": {
+            "legalName": {
+              "type": "object",
+              "required": ["firstName", "lastName"],
+              "properties": {
+                "firstName": {"type": "string", "minLength": 1, "maxLength": 100},
+                "middleName": {"type": "string", "maxLength": 100},
+                "lastName": {"type": "string", "minLength": 1, "maxLength": 100},
+                "suffix": {"type": "string", "maxLength": 10}
+              }
+            },
+            "dateOfBirth": {
+              "type": "string",
+              "format": "date",
+              "description": "ISO 8601 date format (YYYY-MM-DD)"
+            },
+            "taxIdentifier": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["SSN", "ITIN", "EIN", "TIN"]
+                },
+                "valueHash": {
+                  "type": "string",
+                  "description": "SHA-256 hash of tax ID for privacy (not plaintext)"
+                },
+                "verifiedBy": {"type": "string"}
+              }
+            },
+            "address": {
+              "type": "object",
+              "required": ["country"],
+              "properties": {
+                "streetAddress": {"type": "string", "maxLength": 200},
+                "apartment": {"type": "string", "maxLength": 50},
+                "city": {"type": "string", "maxLength": 100},
+                "state": {"type": "string", "maxLength": 50},
+                "postalCode": {"type": "string", "maxLength": 20},
+                "country": {"type": "string", "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2 country code"}
+              }
+            },
+            "contactInfo": {
+              "type": "object",
+              "properties": {
+                "email": {"type": "string", "format": "email"},
+                "phoneNumber": {"type": "string", "pattern": "^\\+[1-9]\\d{1,14}$", "description": "E.164 format"}
+              }
+            }
+          }
+        },
+        "verificationStatus": {
+          "type": "object",
+          "required": ["kycStatus", "amlStatus", "verificationLevel", "verifiedAt"],
+          "properties": {
+            "kycStatus": {
+              "type": "string",
+              "enum": ["verified", "pending", "failed", "expired"],
+              "description": "Know Your Customer verification status"
+            },
+            "amlStatus": {
+              "type": "string",
+              "enum": ["cleared", "pending", "flagged", "blocked"],
+              "description": "Anti-Money Laundering screening status"
+            },
+            "verificationLevel": {
+              "type": "string",
+              "enum": ["basic", "enhanced", "premium"],
+              "description": "Level of identity verification completed"
+            },
+            "verifiedAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO 8601 timestamp of verification"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO 8601 timestamp when verification expires"
+            },
+            "riskRating": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "Risk assessment rating"
+            }
+          }
+        },
+        "accountInfo": {
+          "type": "object",
+          "description": "Optional account-specific information (for AccountHolder credential type)",
+          "properties": {
+            "accountNumbers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type", "numberHash"],
+                "properties": {
+                  "type": {"type": "string", "enum": ["checking", "savings", "investment", "credit"]},
+                  "numberHash": {"type": "string", "description": "SHA-256 hash of account number"},
+                  "status": {"type": "string", "enum": ["active", "closed", "frozen"]}
+                }
+              }
+            },
+            "accountHolderType": {
+              "type": "string",
+              "enum": ["individual", "joint", "business", "trust"]
+            },
+            "authorizationLevel": {
+              "type": "string",
+              "enum": ["view_only", "limited_transaction", "full_transaction", "administrative"]
+            }
+          }
+        },
+        "accreditedInvestorInfo": {
+          "type": "object",
+          "description": "Optional accredited investor information (for AccreditedInvestor credential type)",
+          "properties": {
+            "accreditationStatus": {
+              "type": "boolean",
+              "description": "Whether the subject is an accredited investor"
+            },
+            "accreditationBasis": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "income_threshold",
+                  "net_worth_threshold",
+                  "professional_certification",
+                  "entity_assets"
+                ]
+              }
+            },
+            "verifiedAt": {"type": "string", "format": "date-time"},
+            "expiresAt": {"type": "string", "format": "date-time"},
+            "investmentLimitations": {
+              "type": "object",
+              "properties": {
+                "maxInvestmentAmount": {"type": "number"},
+                "jurisdictionRestrictions": {"type": "array", "items": {"type": "string"}}
+              }
+            }
+          }
+        },
+        "transactionAuthInfo": {
+          "type": "object",
+          "description": "Optional transaction authorization information (for TransactionAuthorization credential type)",
+          "properties": {
+            "transactionLimits": {
+              "type": "object",
+              "properties": {
+                "dailyLimit": {"type": "number"},
+                "transactionLimit": {"type": "number"},
+                "monthlyLimit": {"type": "number"},
+                "currency": {"type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 currency code"}
+              }
+            },
+            "authorizedTransactionTypes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["wire_transfer", "ach", "check", "card_payment", "investment_trade"]
+              }
+            },
+            "multiSigRequired": {"type": "boolean"},
+            "validFrom": {"type": "string", "format": "date-time"},
+            "validUntil": {"type": "string", "format": "date-time"}
+          }
+        },
+        "issuedBy": {
+          "type": "object",
+          "required": ["institutionName", "institutionDID"],
+          "properties": {
+            "institutionName": {"type": "string"},
+            "institutionDID": {"type": "string", "format": "uri"},
+            "institutionType": {
+              "type": "string",
+              "enum": ["bank", "credit_union", "broker_dealer", "insurance_company", "fintech"]
+            },
+            "regulatoryLicenses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "licenseType": {"type": "string"},
+                  "licenseNumber": {"type": "string"},
+                  "jurisdiction": {"type": "string"},
+                  "expiresAt": {"type": "string", "format": "date-time"}
+                }
+              }
+            }
+          }
+        },
+        "complianceMetadata": {
+          "type": "object",
+          "properties": {
+            "regulatoryFrameworks": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["BSA", "PATRIOT_ACT", "GLBA", "FCRA", "OFAC", "FINRA", "SEC", "GDPR", "CCPA"]
+              }
+            },
+            "auditTrailID": {"type": "string", "format": "uuid"},
+            "dataRetentionPeriod": {"type": "integer", "description": "Days to retain credential data"},
+            "privacyNoticeVersion": {"type": "string"},
+            "consentTimestamp": {"type": "string", "format": "date-time"}
+          }
+        }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "description": "Cryptographic proof for credential integrity",
+      "required": ["type", "created", "proofPurpose", "verificationMethod"],
+      "properties": {
+        "type": {"type": "string", "enum": ["Ed25519Signature2020", "RsaSignature2018", "EcdsaSecp256k1Signature2019"]},
+        "created": {"type": "string", "format": "date-time"},
+        "proofPurpose": {"type": "string", "enum": ["assertionMethod", "authentication"]},
+        "verificationMethod": {"type": "string", "format": "uri"},
+        "jws": {"type": "string", "description": "JSON Web Signature"}
+      }
+    }
+  },
+  "metadata": {
+    "schemaVersion": "1.0.0",
+    "lastModified": "2025-10-11",
+    "maintainer": "AxiomHive SSI Team",
+    "securityClassification": "confidential",
+    "complianceStandards": ["SOC 2 Type II", "PCI DSS", "GLBA", "FFIEC"],
+    "changeLog": [
+      {
+        "version": "1.0.0",
+        "date": "2025-10-11",
+        "changes": "Initial production release with full compliance framework"
+      }
+    ]
+  }
+}
